@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/15 17:22:17 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/15 17:30:55 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,19 +28,21 @@ int	check_errors(int argc, char const *argv[])
  * @param paths The array of string to store the paths.
  * @return char**
  */
-void	get_paths(char *const **envp, char ***paths)
+char	**get_paths(char *const **envp)
 {
-	int	i;
+	char	**paths;
+	int		i;
 
 	i = 0;
 	while (ft_strncmp((*envp)[i], "PATH=", 5 != 0))
 		i++;
 	if ((*envp)[i] == NULL)
 	{
-		*paths = NULL;
+		paths = NULL;
 		perror("PATH not found");
 	}
-	*paths = ft_split((*envp)[i] + 5, ':');
+	paths = ft_split((*envp)[i] + 5, ':');
+	return (paths);
 }
 
 /**
@@ -113,7 +115,7 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	int		i;
 
 	cmd->path = 0;
-	get_paths(&envp, &paths);
+	paths = get_paths(&envp);
 
 	// printf("paths: %s\n", paths[0]);
 
@@ -139,6 +141,8 @@ int	main(int argc, char const *argv[], char *const *envp)
 	file1 = get_file_string((char *)argv[1]);
 	parse_cmd(&cmd1, argv[2], envp);
 	exec = execve(cmd1.path, cmd1.args, envp);
+
+	free(cmd1.path);
 
 	return (0);
 }
