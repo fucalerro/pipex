@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/14 16:29:10 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/15 15:36:25 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,23 @@
 
 # define TRUE	0
 # define FALSE	1
+
+# define PL		printf("line %d, file %s\n", __LINE__, __FILE__);
+
+
+typedef struct s_cmd
+{
+	char	*path;
+	char	**args;
+	char	**envp;
+}			t_cmd;
+
+typedef struct s_file
+{
+	char	*path;
+	int		fd;
+}			t_file;
+
+
 
 #endif

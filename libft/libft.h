@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/06 13:57:25 by lferro            #+#    #+#             */
-/*   Updated: 2023/12/11 09:19:10 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/15 14:45:32 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include "printf/ft_printf.h"
 # include "gnl/get_next_line.h"
 
+char	*ft_strjoin_safe(const char *s1, const char *s2);
 int		ft_strcmp(const char *s1, const char *s2);
 int		ft_isalpha(int c);
 int		ft_isdigit(int c);
