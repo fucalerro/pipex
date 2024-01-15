@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/15 17:30:55 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/15 17:35:19 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,6 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	i = -1;
 	while (paths[++i])
 	{
-		printf("paths: %s\n", paths[i]);
 		free(paths[i]);
 	}
 	free(paths);
@@ -137,12 +136,33 @@ int	main(int argc, char const *argv[], char *const *envp)
 	int		exec;
 	char	*file1;
 	t_cmd	cmd1;
+	pid_t	pid;
 
 	file1 = get_file_string((char *)argv[1]);
 	parse_cmd(&cmd1, argv[2], envp);
+
+
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork didn't work");
+		return (1);
+	}
+	else if (pid == 0) // child process
+	{
+
+	}
+	else
+
+
+	printf("fork pid: %d\n", pid);
+
 	exec = execve(cmd1.path, cmd1.args, envp);
 
-	free(cmd1.path);
 
+
+
+
+	free(cmd1.path);
 	return (0);
 }
