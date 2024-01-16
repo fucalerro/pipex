@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/15 17:35:19 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/16 14:00:46 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,147 +21,48 @@ int	check_errors(int argc, char const *argv[])
 	return (0);
 }
 
-/**
- * @brief Get the paths array of string from the global ENV variable.
- * The array contains all possible path of system commands.
- * @param environ The global ENV variable.
- * @param paths The array of string to store the paths.
- * @return char**
- */
-char	**get_paths(char *const **envp)
-{
-	char	**paths;
-	int		i;
-
-	i = 0;
-	while (ft_strncmp((*envp)[i], "PATH=", 5 != 0))
-		i++;
-	if ((*envp)[i] == NULL)
-	{
-		paths = NULL;
-		perror("PATH not found");
-	}
-	paths = ft_split((*envp)[i] + 5, ':');
-	return (paths);
-}
-
-/**
- * @brief Get the correct path for the command in paramater.
- * The final path + cmd name is saved to cmd_path.
- * @param paths The array of string containing all the paths.
- * @param argv The command to find.
- * @param cmd_path The final path of the command.
- * @return int
- */
-int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
-{
-	int		i;
-	char	*p_slash;
-	int		cmd_exist;
-
-	i = -1;
-	while (all_paths[++i])
-	{
-		p_slash = ft_strjoin(all_paths[i], "/");
-		*cmd_path = ft_strjoin(p_slash, *cmd_args);
-		free(p_slash);
-		cmd_exist = access(*cmd_path, F_OK);
-		if (cmd_exist == TRUE)
-			break ;
-		else
-		{
-			cmd_exist = -1;
-			free(*cmd_path);
-		}
-	}
-	if (cmd_exist)
-		perror("command not found!!");
-	return (cmd_exist);
-}
-
-/**
- * @brief Create a string with the content of the file in filepath.
- *
- * @param filepath The path of the file to read.
- * @return char*
- */
-char	*get_file_string(char *filepath)
-{
-	int		fd;
-	char	*line;
-	char	*new_buffer;
-	char	*buffer;
-
-	fd = open(filepath, O_RDWR);
-	buffer = 0;
-	while (1)
-	{
-		line = get_next_line(fd);
-		if (line == NULL)
-			break ;
-		new_buffer = ft_strjoin_safe(buffer, line);
-		free(buffer);
-		buffer = 0;
-		buffer = new_buffer;
-		free(line);
-	}
-	close(fd);
-	return (new_buffer);
-}
-
-int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
-{
-	char	**paths;
-	int		i;
-
-	cmd->path = 0;
-	paths = get_paths(&envp);
-
-	// printf("paths: %s\n", paths[0]);
-
-	cmd->args = ft_split(args, ' ');
-	// printf("cmdargs: %s\n", cmd->args[0]);
-	get_cmd_path(paths, (char const **)cmd->args, &cmd->path);
-	i = -1;
-	while (paths[++i])
-	{
-		free(paths[i]);
-	}
-	free(paths);
-	return (0);
-}
 
 int	main(int argc, char const *argv[], char *const *envp)
 {
 	int		exec;
-	char	*file1;
+	// char	*file1;
 	t_cmd	cmd1;
-	pid_t	pid;
+	pid_t	pid1;
+	int		file1_fd;
+	int	dup2err;
+	int		fd[2];
 
-	file1 = get_file_string((char *)argv[1]);
+	if (pipe(fd) < 0)
+		perror("pipe error\n");
+
 	parse_cmd(&cmd1, argv[2], envp);
 
-
-	pid = fork();
-	if (pid < 0)
+	pid1 = fork();
+	if (pid1 < 0)
 	{
-		perror("fork didn't work");
+		perror("fork error");
 		return (1);
 	}
-	else if (pid == 0) // child process
+	else if (pid1 == 0) // child process
+	{
+		file1_fd = open(argv[1], O_RDONLY);
+		dup2err = dup2(file1_fd, STDIN_FILENO);
+		if (dup2err < 0)
+		{
+			perror("dup2 error");
+			close(file1_fd);
+		}
+		close(file1_fd);
+
+		exec = execve(cmd1.path, cmd1.args, envp);
+	}
+	else // parent process
 	{
 
+		wait(0);
 	}
-	else
 
-
-	printf("fork pid: %d\n", pid);
-
-	exec = execve(cmd1.path, cmd1.args, envp);
-
-
-
-
+	// printf("fork pid: %d\n", pid);
 
 	free(cmd1.path);
 	return (0);
