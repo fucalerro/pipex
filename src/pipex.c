@@ -6,13 +6,19 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 09:28:19 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 14:43:44 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
 extern char	**environ;
+
+void	print_errors(int errnum)
+{
+	perror("pipex");
+}
+
 
 int	check_errors(int argc, char const *argv[])
 {
@@ -33,97 +39,146 @@ int	check_errors(int argc, char const *argv[])
 
 int	check_file_permissions(char *filepath)
 {
-	
+
+}
+
+t_err	open_files(char const *argv[], int *in_fd, int *out_fd)
+{
+	t_err	err;
+
+	err.in = 0;
+	if (access(argv[1], F_OK) == -1)
+	{
+		printf("%s: %s\n", strerror(errno), argv[1]);
+		err.in = F_NOT_EXIST;
+	}
+	else if (access(argv[1], R_OK) == -1)
+	{
+		printf("%s: %s\n", strerror(errno), argv[1]);
+		err.in = READ_DENIED;
+	}
+	*in_fd = open(argv[1], O_RDONLY);
+	*out_fd = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (access(argv[3], F_OK) == -1)
+	{
+		if (access(".", W_OK) == -1)
+			printf("%s: %s\n", strerror(errno), argv[3]);
+		err.out = CREATE_DENIED;
+	}
+	else if (access(argv[3], W_OK) == -1)
+	{
+		printf("%s: %s\n", strerror(errno), argv[3]);
+		err.out = WRITE_DENIED;
+	}
+	return (err);
+}
+
+
+// check if the outfile is a directory. In that case, exit the whole program
+int	is_outfile_directory(char const *outfile)
+{
+	int	fd;
+
+	fd = open(outfile, O_DIRECTORY);
+	if (fd >= 0)
+	{
+		printf("is a directory: %s\n", outfile);
+		close(fd);
+		exit(0);
+	}
+	close(fd);
+
 }
 
 
 int	main(int argc, char const *argv[], char *const *envp)
 {
-	t_cmd	cmd1;
-	t_cmd	cmd2;
-	pid_t	pid;
-	int		file1_fd;
+	t_cmd	cmd_in;
+	t_cmd	cmd_out;
+	pid_t	in_pid;
+	pid_t	out_pid;
+	int		in_fd;
+	int		out_fd;
 	int		fd[2];
-	int		file2_fd;
-	int		file2_perm;
+	t_err	f_err;
+	t_err	cmd_err;
 
-	file2_perm = 0;
-
-	// if (check_errors(argc, argv) != 0)
-	// {
-	// 	print_errors();
-	// 	freestuff();
-	// 	exit(0);
-	// }
-
+	is_outfile_directory(argv[3]);
 	pipe(fd);
 
-	parse_cmd(&cmd1, argv[2], envp);
-	parse_cmd(&cmd2, argv[4], envp);
+	// init file and cmd errors
+	f_err.in = 0;
+	f_err.out = 0;
+	cmd_err.in = 0;
+	cmd_err.out = 0;
 
-
-
-
-	// check if file exist
-	if (access(argv[1], F_OK) == -1)
-		printf("no such file or directory: %s\n", argv[1]);
-		
-	// check read permission for file1
-	else if (has_read_permission((char *)argv[1]) == false)
-		printf("permission denied: %s\n", argv[1]);
-		
-
-	file1_fd = open(argv[1], O_RDONLY);
-	file2_fd = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-
-	// check write or create permission for file2
-	if (access(argv[3], F_OK) == -1)
+	// parse commands if no file errors
+	f_err = open_files(argv, &in_fd, &out_fd);
+	if (f_err.in >= 0)
 	{
-		if (has_create_permission() == false)
-			printf("permission denied: %s\n", argv[3]);
-		file2_perm = -1;
+		if (parse_cmd(&cmd_in, argv[2], envp) == FALSE)
+		{
+			cmd_err.in = CMD_NOT_FOUND;
+			printf("command not found: %s", argv[2]);
+		}
 	}
-	else if (has_write_permission((char *)argv[3]) == false)
+	if (f_err.out >= 0)
 	{
-		printf("permission denied: %s\n", argv[3]);
-		file2_perm = -1;
-
+		if (parse_cmd(&cmd_out, argv[4], envp) == FALSE)
+		{
+			cmd_err.out = CMD_NOT_FOUND;
+			printf("command not found: %s", argv[2]);
+		}
 	}
 
-
-
-	pid = fork();
-	if (pid < 0)
+	in_pid = fork();
+	if (in_pid < 0)
 	{
 		perror("fork error");
 		return (1);
 	}
-	else if (pid == 0) // child process
+	else if (in_pid == 0) // child process
 	{
-		close(fd[0]);
-		dup2(file1_fd, STDIN_FILENO);
-		close(file1_fd);
-		dup2(fd[1], STDOUT_FILENO);
-		close(fd[1]);
-		execve(cmd1.path, cmd1.args, envp);
+		// if no file error and no cmd error, exec cmd1 with file1
+		if (f_err.in >= 0 && cmd_err.in >= 0)
+		{
+			close(fd[0]);
+			dup2(in_fd, STDIN_FILENO);
+			close(in_fd);
+			dup2(fd[1], STDOUT_FILENO);
+			close(fd[1]);
+			execve(cmd_in.path, cmd_in.args, envp);
+		}
 	}
-	else // parent process
+	else
 	{
-		wait(0);
-		close(fd[1]);
-		dup2(fd[0], STDIN_FILENO);
-		close(fd[0]);
-		dup2(file2_fd, STDOUT_FILENO);
-		close(file2_fd);
-		if (file2_perm == 0)
-			execve(cmd2.path, cmd2.args, envp);
-	}
+		out_pid = fork();
 
-	free(cmd1.path);
-	free(cmd2.path);
-	free(cmd1.args);
-	free(cmd2.args);
-	exit(1);
-	return (0);
+		if (out_pid < 0)
+		{
+			perror("fork2 error");
+			return (1);
+		}
+		else if (out_pid == 0) // 2nd child process
+		{
+			if (f_err.out >= 0 && cmd_err.out >= 0)
+			{
+				wait(0);
+				close(fd[1]);
+				dup2(fd[0], STDIN_FILENO);
+				close(fd[0]);
+				dup2(out_fd, STDOUT_FILENO);
+				close(out_fd);
+				execve(cmd_out.path, cmd_out.args, envp);
+			}
+		}
+		else //  parent process
+		{
+			free(cmd_in.path);
+			free(cmd_out.path);
+			free(cmd_in.args);
+			free(cmd_out.args);
+			return (0);
+		}
+	}
 }

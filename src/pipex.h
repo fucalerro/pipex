@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/19 19:30:22 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 13:14:30 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 /*************************************************************
  *                        INCLUDES                           *
  *************************************************************/
-
 
 # include "../libft/libft.h"
 # include <fcntl.h>
@@ -28,6 +27,7 @@
 # include <sys/wait.h>
 # include <unistd.h>
 # include <stdbool.h>
+# include <errno.h>
 
 /*************************************************************
  *                        DEFINES                            *
@@ -35,8 +35,12 @@
 
 # define TRUE			0
 # define FALSE			1
-# define READ_DENIED	1
-# define WRITE_DENIED	1
+
+# define F_NOT_EXIST	-1
+# define READ_DENIED	-2
+# define WRITE_DENIED	-3
+# define CREATE_DENIED	-4
+# define CMD_NOT_FOUND	-1
 
 # define PL		printf("line %d, file %s\n", __LINE__, __FILE__);
 
@@ -56,6 +60,12 @@ typedef struct s_file
 	char	*path;
 	int		fd;
 }			t_file;
+
+typedef struct s_err
+{
+	int		in;
+	int		out;
+}			t_err;
 
 /*************************************************************
  *                        FUNCTIONS                          *
