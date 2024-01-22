@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 17:32:14 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 19:21:59 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,29 +90,20 @@ int	is_outfile_directory(char const *outfile)
 
 }
 
-void	init_err(t_err *f_err, t_err *cmd_err)
+void	init_err(t_err *err_file, t_err *err_cmd)
 {
-	f_err->in = 0;
-	f_err->out = 0;
-	cmd_err->in = 0;
-	cmd_err->out = 0;
+	err_file->in = 0;
+	err_file->out = 0;
+	err_cmd->in = 0;
+	err_cmd->out = 0;
 }
+
+
 
 int	main(int argc, char const *argv[], char *const *envp)
 {
-	t_cmd	cmd_in;
-	t_cmd	cmd_out;
-	pid_t	in_pid;
-	pid_t	out_pid;
-
-	t_fds	fd;
-
-	int		in_fd;
-	int		out_fd;
-	int		fd[2];
-
-	t_err	f_err;
-	t_err	cmd_err;
+	t_infos	info;
+	pid_t	pid;
 
 	if (argc != 5)
 	{
@@ -120,100 +111,100 @@ int	main(int argc, char const *argv[], char *const *envp)
 		return (1);
 	}
 	is_outfile_directory(argv[4]);
-	init_err(&f_err, &cmd_err);
+	init_err(&info.err_cmd, &info.err_file);
 
+	// cmds_parsing(argv, cmd, err, envp);
 
-	// parse_cmds(argv, f_err, cmd_err, );
+	info.err_file = open_files(argv, &info.fd.in, &info.fd.out);
 
-	// parse commands if no file errors
-	f_err = open_files(argv, &in_fd, &out_fd);
-	if (f_err.in >= 0)
+	info.err_file = open_files(argv, &info.fd.in, &info.fd.out);
+	if (info.err_file.in >= 0)
 	{
-		if (parse_cmd(&cmd_in, argv[2], envp) == FALSE)
+		if (parse_cmd(&info.cmd_in, argv[2], envp) == FALSE)
 		{
-			cmd_err.in = CMD_NOT_FOUND;
+			info.err_cmd.in = CMD_NOT_FOUND;
 			printf("command not found: %s", argv[2]);
 		}
 	}
-	if (f_err.out >= 0)
+	if (info.err_file.out >= 0)
 	{
-		if (parse_cmd(&cmd_out, argv[3], envp) == FALSE)
+		if (parse_cmd(&info.cmd_out, argv[3], envp) == FALSE)
 		{
-			cmd_err.out = CMD_NOT_FOUND;
+			info.err_cmd.out = CMD_NOT_FOUND;
 			printf("command not found: %s", argv[2]);
 		}
 	}
 
-	pipe(fd);
-	in_pid = fork();
-	if (in_pid < 0)
+	pipe(info.fd.pipe);
+	pid = fork();
+	if (pid < 0)
 	{
 		perror("fork error");
 		return (1);
 	}
-	else if (in_pid == 0) // child process
+	else if (pid == 0) // child process
 	{
 		// if no file error and no cmd error, exec cmd1 with file1
-		if (f_err.in >= 0 && cmd_err.in >= 0)
+		if (info.err_file.in >= 0 && info.err_cmd.in >= 0)
 		{
-			close(fd[0]);
-			dup2(in_fd, STDIN_FILENO);
-			close(in_fd);
-			dup2(fd[1], STDOUT_FILENO);
-			close(fd[1]);
-			execve(cmd_in.path, cmd_in.args, envp);
+			close(info.fd.pipe[0]);
+			dup2(info.fd.in, STDIN_FILENO);
+			close(info.fd.in);
+			dup2(info.fd.pipe[1], STDOUT_FILENO);
+			close(info.fd.pipe[1]);
+			execve(info.cmd_in.path, info.cmd_in.args, envp);
 		}
 		else
 		{
-			close(fd[1]);
-			close(fd[0]);
-			close(fd[in_fd]);
-			close(fd[out_fd]);
+			close(info.fd.pipe[1]);
+			close(info.fd.pipe[0]);
+			close(info.fd.in);
+			close(info.fd.out);
 		}
 	}
 	else
 	{
-		out_pid = fork();
+		pid = fork();
 
-		if (out_pid < 0)
+		if (pid < 0)
 		{
 			perror("fork2 error");
 			return (1);
 		}
-		else if (out_pid == 0) // 2nd child process
+		else if (pid == 0) // 2nd child process
 		{
-			if (f_err.out >= 0 && cmd_err.out >= 0)
+			if (info.err_file.out >= 0 && info.err_cmd.out >= 0)
 			{
 				wait(0);
-				close(fd[1]);
-				dup2(fd[0], STDIN_FILENO);
-				close(fd[0]);
-				dup2(out_fd, STDOUT_FILENO);
-				close(out_fd);
-				execve(cmd_out.path, cmd_out.args, envp);
+				close(info.fd.pipe[1]);
+				dup2(info.fd.pipe[0], STDIN_FILENO);
+				close(info.fd.pipe[0]);
+				dup2(info.fd.out, STDOUT_FILENO);
+				close(info.fd.out);
+				execve(info.cmd_out.path, info.cmd_out.args, envp);
 			}
 			else
 			{
-				close(fd[1]);
-				close(fd[0]);
-				close(fd[in_fd]);
-				close(fd[out_fd]);
+				close(info.fd.pipe[1]);
+				close(info.fd.pipe[0]);
+				close(info.fd.in);
+				close(info.fd.out);
 			}
 		}
 		else // parent process
 		{
 			wait(0);
-			free(cmd_in.path);
-			free(cmd_out.path);
+			free(info.cmd_in.path);
+			free(info.cmd_out.path);
 			int	i;
 			i = -1;
-			while (cmd_in.args[++i])
-				free(cmd_in.args[i]);
+			while (info.cmd_in.args[++i])
+				free(info.cmd_in.args[i]);
 			i = -1;
-			while (cmd_out.args[++i])
-				free(cmd_out.args[i]);
-			free(cmd_in.args);
-			free(cmd_out.args);
+			while (info.cmd_out.args[++i])
+				free(info.cmd_out.args[i]);
+			free(info.cmd_in.args);
+			free(info.cmd_out.args);
 			return (0);
 		}
 	}

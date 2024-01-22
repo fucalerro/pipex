@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 17:32:08 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 18:26:44 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,13 @@ typedef struct s_cmd
 {
 	char	*path;
 	char	**args;
-	char	**envp;
 }			t_cmd;
 
-typedef struct s_file
+typedef struct s_cmds
 {
-	char	*path;
-	int		fd;
-}			t_file;
+	t_cmd	in;
+	t_cmd	out;
+}			t_cmds;
 
 typedef struct s_err
 {
@@ -67,12 +66,29 @@ typedef struct s_err
 	int		out;
 }			t_err;
 
+typedef struct s_errs
+{
+	t_err	file;
+	t_err	cmd;
+}			t_errs;
+
 typedef struct s_fds
 {
 	int		pipe[2];
 	int		in;
 	int		out;
 }			t_fds;
+
+typedef struct s_infos
+{
+	t_cmd	cmd_in;
+	t_cmd	cmd_out;
+
+	t_err	err_file;
+	t_err	err_cmd;
+
+	t_fds	fd;
+}			t_infos;
 
 /*************************************************************
  *                        FUNCTIONS                          *
