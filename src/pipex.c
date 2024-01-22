@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 14:43:44 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 17:32:14 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,16 +58,16 @@ t_err	open_files(char const *argv[], int *in_fd, int *out_fd)
 		err.in = READ_DENIED;
 	}
 	*in_fd = open(argv[1], O_RDONLY);
-	*out_fd = open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (access(argv[3], F_OK) == -1)
+	*out_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (access(argv[4], F_OK) == -1)
 	{
 		if (access(".", W_OK) == -1)
-			printf("%s: %s\n", strerror(errno), argv[3]);
+			printf("%s: %s\n", strerror(errno), argv[4]);
 		err.out = CREATE_DENIED;
 	}
-	else if (access(argv[3], W_OK) == -1)
+	else if (access(argv[4], W_OK) == -1)
 	{
-		printf("%s: %s\n", strerror(errno), argv[3]);
+		printf("%s: %s\n", strerror(errno), argv[4]);
 		err.out = WRITE_DENIED;
 	}
 	return (err);
@@ -90,6 +90,13 @@ int	is_outfile_directory(char const *outfile)
 
 }
 
+void	init_err(t_err *f_err, t_err *cmd_err)
+{
+	f_err->in = 0;
+	f_err->out = 0;
+	cmd_err->in = 0;
+	cmd_err->out = 0;
+}
 
 int	main(int argc, char const *argv[], char *const *envp)
 {
@@ -97,20 +104,26 @@ int	main(int argc, char const *argv[], char *const *envp)
 	t_cmd	cmd_out;
 	pid_t	in_pid;
 	pid_t	out_pid;
+
+	t_fds	fd;
+
 	int		in_fd;
 	int		out_fd;
 	int		fd[2];
+
 	t_err	f_err;
 	t_err	cmd_err;
 
-	is_outfile_directory(argv[3]);
-	pipe(fd);
+	if (argc != 5)
+	{
+		printf("Invalid number of arguments\n");
+		return (1);
+	}
+	is_outfile_directory(argv[4]);
+	init_err(&f_err, &cmd_err);
 
-	// init file and cmd errors
-	f_err.in = 0;
-	f_err.out = 0;
-	cmd_err.in = 0;
-	cmd_err.out = 0;
+
+	// parse_cmds(argv, f_err, cmd_err, );
 
 	// parse commands if no file errors
 	f_err = open_files(argv, &in_fd, &out_fd);
@@ -124,13 +137,14 @@ int	main(int argc, char const *argv[], char *const *envp)
 	}
 	if (f_err.out >= 0)
 	{
-		if (parse_cmd(&cmd_out, argv[4], envp) == FALSE)
+		if (parse_cmd(&cmd_out, argv[3], envp) == FALSE)
 		{
 			cmd_err.out = CMD_NOT_FOUND;
 			printf("command not found: %s", argv[2]);
 		}
 	}
 
+	pipe(fd);
 	in_pid = fork();
 	if (in_pid < 0)
 	{
@@ -148,6 +162,13 @@ int	main(int argc, char const *argv[], char *const *envp)
 			dup2(fd[1], STDOUT_FILENO);
 			close(fd[1]);
 			execve(cmd_in.path, cmd_in.args, envp);
+		}
+		else
+		{
+			close(fd[1]);
+			close(fd[0]);
+			close(fd[in_fd]);
+			close(fd[out_fd]);
 		}
 	}
 	else
@@ -171,11 +192,26 @@ int	main(int argc, char const *argv[], char *const *envp)
 				close(out_fd);
 				execve(cmd_out.path, cmd_out.args, envp);
 			}
+			else
+			{
+				close(fd[1]);
+				close(fd[0]);
+				close(fd[in_fd]);
+				close(fd[out_fd]);
+			}
 		}
-		else //  parent process
+		else // parent process
 		{
+			wait(0);
 			free(cmd_in.path);
 			free(cmd_out.path);
+			int	i;
+			i = -1;
+			while (cmd_in.args[++i])
+				free(cmd_in.args[i]);
+			i = -1;
+			while (cmd_out.args[++i])
+				free(cmd_out.args[i]);
 			free(cmd_in.args);
 			free(cmd_out.args);
 			return (0);

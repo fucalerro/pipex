@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 14:31:58 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 17:28:02 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ char	**get_paths(char *const **envp)
  * @param cmd_path The final path of the command.
  * @return int
  */
-int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
+int	get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path)
 {
 	int		i;
 	char	*p_slash;
@@ -56,7 +56,7 @@ int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
 	while (all_paths[++i])
 	{
 		p_slash = ft_strjoin_safe(all_paths[i], "/");
-		*cmd_path = ft_strjoin_safe(p_slash, *cmd_args);
+		*cmd_path = ft_strjoin_safe(p_slash, **cmd_args);
 		free(p_slash);
 		cmd_exist = access(*cmd_path, F_OK);
 		if (cmd_exist == TRUE)
@@ -70,7 +70,7 @@ int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
 	}
 	if (cmd_exist != TRUE)
 	{
-		printf("command not found: %s\n", cmd_args[0]);
+		printf("command not found: %s\n", (*cmd_args)[0]);
 	}
 	return (cmd_exist);
 }
@@ -123,8 +123,15 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	paths = get_paths(&envp);
 
 	cmd->args = ft_split(args, ' ');
-	cmd_exist = get_cmd_path(paths, (char const **)cmd->args, &cmd->path);
+	cmd_exist = get_cmd_path(paths, (char const **)&cmd->args, &cmd->path);
 	i = -1;
+
+	// while (cmd->args[++i])
+	// {
+	// 	printf("cmd->args[%d]: %s\n", i, cmd->args[i]);
+	// }
+
+
 	while (paths[++i])
 	{
 		free(paths[i]);

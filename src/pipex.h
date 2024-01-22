@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 13:14:30 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/22 17:32:08 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,12 +67,19 @@ typedef struct s_err
 	int		out;
 }			t_err;
 
+typedef struct s_fds
+{
+	int		pipe[2];
+	int		in;
+	int		out;
+}			t_fds;
+
 /*************************************************************
  *                        FUNCTIONS                          *
  *************************************************************/
 
 char	**get_paths(char *const **envp);
-int		get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path);
+int		get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path);
 int		parse_cmd(t_cmd *cmd, const char *args, char *const *envp);
 char	*get_file_string(char *filepath);
 
