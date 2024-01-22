@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/16 18:02:52 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/19 19:30:22 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,10 @@
  *                        DEFINES                            *
  *************************************************************/
 
-# define TRUE	0
-# define FALSE	1
+# define TRUE			0
+# define FALSE			1
+# define READ_DENIED	1
+# define WRITE_DENIED	1
 
 # define PL		printf("line %d, file %s\n", __LINE__, __FILE__);
 
@@ -63,5 +65,9 @@ char	**get_paths(char *const **envp);
 int		get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path);
 int		parse_cmd(t_cmd *cmd, const char *args, char *const *envp);
 char	*get_file_string(char *filepath);
+
+int		has_create_permission(void);
+int		has_write_permission(char *filepath);
+int		has_read_permission(char *filepath);
 
 #endif

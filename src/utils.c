@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/16 18:26:12 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/19 20:03:45 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,11 +50,13 @@ int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
 	char	*p_slash;
 	int		cmd_exist;
 
-	i = -1;
+	cmd_exist = FALSE;
+
+	i = 0;
 	while (all_paths[++i])
 	{
-		p_slash = ft_strjoin(all_paths[i], "/");
-		*cmd_path = ft_strjoin(p_slash, *cmd_args);
+		p_slash = ft_strjoin_safe(all_paths[i], "/");
+		*cmd_path = ft_strjoin_safe(p_slash, *cmd_args);
 		free(p_slash);
 		cmd_exist = access(*cmd_path, F_OK);
 		if (cmd_exist == TRUE)
@@ -63,7 +65,13 @@ int	get_cmd_path(char **all_paths, char const **cmd_args, char **cmd_path)
 		{
 			cmd_exist = -1;
 			free(*cmd_path);
+			*cmd_path = 0;
 		}
+	}
+	if (cmd_exist != TRUE)
+	{
+		printf("command not found: %s\n", cmd_args[0]);
+		free(*cmd_path);
 	}
 	return (cmd_exist);
 }
@@ -125,4 +133,25 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	}
 	free(paths);
 	return (cmd_exist);
+}
+
+int	has_read_permission(char *filepath)
+{
+	if (access(filepath, R_OK) != 0)
+		return (false);
+	return (true);
+}
+
+int	has_write_permission(char *filepath)
+{
+	if (access(filepath, W_OK) != 0)
+		return (false);
+	return (true);
+}
+
+int	has_create_permission(void)
+{
+	if (access(".", W_OK) != 0)
+		return (false);
+	return (true);
 }
