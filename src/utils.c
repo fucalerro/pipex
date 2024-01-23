@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 15:59:48 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/23 18:13:12 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,24 +152,3 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	printf("NEW cmd_exist: %d\n", cmd_exist);
 	return (cmd_exist);
 }
-
-// int	has_read_permission(char *filepath)
-// {
-// 	if (access(filepath, R_OK) != 0)
-// 		return (false);
-// 	return (true);
-// }
-
-// int	has_write_permission(char *filepath)
-// {
-// 	if (access(filepath, W_OK) != 0)
-// 		return (false);
-// 	return (true);
-// }
-
-// int	has_create_permission(void)
-// {
-// 	if (access(".", W_OK) != 0)
-// 		return (false);
-// 	return (true);
-// }

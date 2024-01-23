@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 15:22:47 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/23 18:13:17 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,5 +93,9 @@ t_err	open_files(char const *argv[], int *in_fd, int *out_fd);
 void	access_infile(const char *filename, t_err *err);
 void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp);
 void	close_fds(t_fds *fd);
+
+
+/* FUNCTIONS */
+int	access_outfile(const char *filename, t_err *err);
 
 #endif

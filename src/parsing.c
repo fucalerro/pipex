@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:46:16 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 17:51:15 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/23 18:29:59 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp)
 		if (parse_cmd(&info->cmd_in, argv[2], envp) == FALSE)
 		{
 			info->err_cmd.in = CMD_NOT_FOUND;
-			printf("!!info->err_cmd.in: %d\n", info->err_cmd.in);
 			printf("command not found: %s", argv[2]);
 		}
 	}
@@ -47,12 +46,12 @@ void	access_infile(const char *filename, t_err *err)
 	err->in = 0;
 	if (access(filename, F_OK) == -1)
 	{
-		printf("fileok: %s: %s\n", strerror(errno), filename);
+		printf("%s: %s\n", strerror(errno), filename);
 		err->in = F_NOT_EXIST;
 	}
 	else if (access(filename, R_OK) == -1)
 	{
-		printf("readok: %s: %s\n", strerror(errno), filename);
+		printf("%s: %s\n", strerror(errno), filename);
 		err->in = READ_DENIED;
 	}
 }
@@ -75,16 +74,26 @@ t_err	open_files(char const *argv[], int *in_fd, int *out_fd)
 	access_infile(argv[1], &err);
 	*in_fd = open(argv[1], O_RDONLY);
 	*out_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (access(argv[4], F_OK) == -1)
+	// access_outfile(argv[4], &err);
+	return (err);
+}
+
+int	access_outfile(const char *filename, t_err *err)
+{
+	if (access(filename, F_OK) == -1)
 	{
 		if (access(".", W_OK) == -1)
-			printf("%s: %s\n", strerror(errno), argv[4]);
-		err.out = CREATE_DENIED;
+		{
+			printf("%s: %s\n", strerror(errno), filename);
+			err->out = CREATE_DENIED;
+			return (-1);
+		}
 	}
-	else if (access(argv[4], W_OK) == -1)
+	else if (access(filename, W_OK) == -1)
 	{
-		printf("%s: %s\n", strerror(errno), argv[4]);
-		err.out = WRITE_DENIED;
+		printf("%s: %s\n", strerror(errno), filename);
+		err->out = WRITE_DENIED;
+		return (-1);
 	}
-	return (err);
+	return (0);
 }
