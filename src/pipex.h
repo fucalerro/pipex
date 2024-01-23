@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 18:26:44 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/23 15:22:47 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 # define CREATE_DENIED	-4
 # define CMD_NOT_FOUND	-1
 
-# define PL		printf("line %d, file %s\n", __LINE__, __FILE__);
+# define PL		printf("\nline %d, file %s\n\n", __LINE__, __FILE__);
 
 /*************************************************************
  *                        STRUCTURES                         *
@@ -54,23 +54,11 @@ typedef struct s_cmd
 	char	**args;
 }			t_cmd;
 
-typedef struct s_cmds
-{
-	t_cmd	in;
-	t_cmd	out;
-}			t_cmds;
-
 typedef struct s_err
 {
 	int		in;
 	int		out;
 }			t_err;
-
-typedef struct s_errs
-{
-	t_err	file;
-	t_err	cmd;
-}			t_errs;
 
 typedef struct s_fds
 {
@@ -97,10 +85,13 @@ typedef struct s_infos
 char	**get_paths(char *const **envp);
 int		get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path);
 int		parse_cmd(t_cmd *cmd, const char *args, char *const *envp);
-char	*get_file_string(char *filepath);
-
-int		has_create_permission(void);
-int		has_write_permission(char *filepath);
-int		has_read_permission(char *filepath);
+void	out_cmd_process(t_infos *info, char *const *envp);
+void	in_cmd_process(t_infos *info, char *const *envp);
+int		cmds_process(t_infos *info, char *const *envp);
+void	parent_process(t_infos *info, pid_t pid);
+t_err	open_files(char const *argv[], int *in_fd, int *out_fd);
+void	access_infile(const char *filename, t_err *err);
+void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp);
+void	close_fds(t_fds *fd);
 
 #endif

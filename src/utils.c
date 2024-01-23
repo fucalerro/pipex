@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/22 18:21:29 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/23 15:59:48 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ int	get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path)
 			break ;
 		else
 		{
-			cmd_exist = -1;
+			cmd_exist = FALSE;
 			free(*cmd_path);
 			*cmd_path = 0;
 		}
@@ -105,6 +105,26 @@ int	get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path)
 // 	return (new_buffer);
 // }
 
+void	single_quote_string(char ***args)
+{
+	int	j;
+	int	i;
+
+	i = -1;
+	j = -1;
+	while ((*args)[++i])
+	{
+		if ((*args)[i][0] == '\'')
+		{
+			while ((*args)[i][++j])
+				(*args)[i][j] = (*args)[i][j + 1];
+			(*args)[i][j - 2] = 0;
+		}
+		j = -1;
+	}
+}
+
+
 /**
  * @brief Parse the command in args and store the result in cmd struct.
  *
@@ -123,40 +143,33 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 	paths = get_paths(&envp);
 
 	cmd->args = ft_split(args, ' ');
-	cmd_exist = get_cmd_path(paths, (char const **)&cmd->args, &cmd->path);
+	cmd_exist = get_cmd_path(paths, (char const ***)&cmd->args, &cmd->path);
 	i = -1;
-
-	// while (cmd->args[++i])
-	// {
-	// 	printf("cmd->args[%d]: %s\n", i, cmd->args[i]);
-	// }
-
-
+	single_quote_string(&cmd->args);
 	while (paths[++i])
-	{
 		free(paths[i]);
-	}
 	free(paths);
+	printf("NEW cmd_exist: %d\n", cmd_exist);
 	return (cmd_exist);
 }
 
-int	has_read_permission(char *filepath)
-{
-	if (access(filepath, R_OK) != 0)
-		return (false);
-	return (true);
-}
+// int	has_read_permission(char *filepath)
+// {
+// 	if (access(filepath, R_OK) != 0)
+// 		return (false);
+// 	return (true);
+// }
 
-int	has_write_permission(char *filepath)
-{
-	if (access(filepath, W_OK) != 0)
-		return (false);
-	return (true);
-}
+// int	has_write_permission(char *filepath)
+// {
+// 	if (access(filepath, W_OK) != 0)
+// 		return (false);
+// 	return (true);
+// }
 
-int	has_create_permission(void)
-{
-	if (access(".", W_OK) != 0)
-		return (false);
-	return (true);
-}
+// int	has_create_permission(void)
+// {
+// 	if (access(".", W_OK) != 0)
+// 		return (false);
+// 	return (true);
+// }
