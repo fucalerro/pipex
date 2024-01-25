@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/25 18:26:11 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 20:35:56 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,5 +101,7 @@ void	access_outfile(const char *filename, t_infos *info);
 void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp);
 void	close_fds(t_infos *info);
 void	init_err(t_infos *info);
+void	print_errors(char *before_msg, char *errmsg, char *after_msg);
+// void	ft_perror(const char *s, ...);
 
 #endif

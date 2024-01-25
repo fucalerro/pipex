@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:10:54 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/25 18:18:59 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 20:36:47 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ int	main(int argc, char const *argv[], char *const *envp)
 
 	if (argc != 5)
 	{
-		printf("Invalid number of arguments\n");
+		print_errors("Invalid number of arguments", "", "");
 		return (1);
 	}
 	cmds_parsing(&info, argv, envp);

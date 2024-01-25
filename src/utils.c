@@ -6,11 +6,32 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/25 18:27:45 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 20:38:45 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+
+// void	ft_perror(const char *s, ...)
+// {
+// 	int		og_stdout;
+// 	va_list	args;	
+// 	va_start(args, s);
+// 	og_stdout = dup(1);
+// 	dup2(2, 1);
+// 	ft_printf(s, args);
+// 	dup2(og_stdout, 1);
+// }
+
+void	print_errors(char *before_msg, char *errmsg, char *after_msg)
+{
+	int	og_stdout;
+
+	og_stdout = dup(1);
+	dup2(2, 1);
+	ft_printf("%s%s%s\n", before_msg, errmsg, after_msg);
+	dup2(og_stdout, 1);
+}
 
 /**
  * @brief Get the paths array of string from the global ENV variable.
@@ -68,7 +89,7 @@ int	get_cmd_path(char **paths, char const ***args, char **path, int err_file)
 		}
 	}
 	if (cmd_exist != TRUE && err_file == 0)
-		printf("command not found: %s\n", (*args)[0]);
+		print_errors("Command not found: ", (char *)(*args)[0], "");
 	return (cmd_exist);
 }
 

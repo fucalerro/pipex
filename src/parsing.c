@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:46:16 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/25 18:25:55 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 20:38:16 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@ void	access_infile(const char *filename, t_infos *info)
 	info->err_file.in = 0;
 	if (access(filename, F_OK) == -1)
 	{
-		printf("%s: %s\n", strerror(errno), filename);
+		print_errors(strerror(errno), ": ", (char *)filename);
 		info->err_file.in = F_NOT_EXIST;
 	}
 	else if (access(filename, R_OK) == -1)
 	{
-		printf("%s: %s\n", strerror(errno), filename);
+		print_errors(strerror(errno), ": ", (char *)filename);
 		info->err_file.in = READ_DENIED;
 	}
 }
@@ -72,13 +72,13 @@ void	access_outfile(const char *filename, t_infos *info)
 	{
 		if (access(".", W_OK) == -1)
 		{
-			printf("%s: %s\n", strerror(errno), filename);
+			print_errors(strerror(errno), ": ", (char *)filename);
 			info->err_file.out = CREATE_DENIED;
 		}
 	}
 	else if (access(filename, W_OK) == -1)
 	{
-		printf("%s: %s\n", strerror(errno), filename);
+		print_errors(strerror(errno), ": ", (char *)filename);
 		info->err_file.out = WRITE_DENIED;
 	}
 }
