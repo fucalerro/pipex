@@ -6,16 +6,37 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:45:23 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 18:18:36 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 18:13:04 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
+void	in_cmd_process(t_infos *info, char *const *envp)
+{
+	if (info->err_file.in == 0 && info->err_cmd.in == 0)
+	{
+		close(info->fd.pipe[0]);
+		dup2(info->fd.in, STDIN_FILENO);
+		close(info->fd.in);
+		dup2(info->fd.pipe[1], STDOUT_FILENO);
+		close(info->fd.pipe[1]);
+		execve(info->cmd_in.path, info->cmd_in.args, envp);
+	}
+	else if (info->err_file.in != 0)
+	{
+		exit(1);
+	}
+	else
+	{
+		close_fds(info);
+		exit(1);
+	}
+}
 
 void	out_cmd_process(t_infos *info, char *const *envp)
 {
-	if (info->err_file.out >= 0 || info->err_cmd.out >= 0)
+	if (info->err_file.out == 0 && info->err_cmd.out == 0)
 	{
 		close(info->fd.pipe[1]);
 		dup2(info->fd.pipe[0], STDIN_FILENO);
@@ -26,27 +47,7 @@ void	out_cmd_process(t_infos *info, char *const *envp)
 	}
 	else
 	{
-		close_fds(&info->fd);
-		PL;
-		exit(1);
-	}
-}
-
-void	in_cmd_process(t_infos *info, char *const *envp)
-{
-	if (info->err_file.in >= 0 || info->err_cmd.in >= 0)
-	{
-		close(info->fd.pipe[0]);
-		dup2(info->fd.in, STDIN_FILENO);
-		close(info->fd.in);
-		dup2(info->fd.pipe[1], STDOUT_FILENO);
-		close(info->fd.pipe[1]);
-		execve(info->cmd_in.path, info->cmd_in.args, envp);
-	}
-	else
-	{
-		PL;
-		close_fds(&info->fd);
+		close_fds(info);
 		exit(1);
 	}
 }
@@ -70,30 +71,34 @@ int	cmds_process(t_infos *info, char *const *envp)
 		if (pid < 0)
 			return (1);
 		else if (pid == 0)
-			out_cmd_process(info, envp);
-		else
 		{
-			parent_process(info, pid);
-			return (0);
+			wait(0);
+			out_cmd_process(info, envp);
 		}
+		else
+			parent_process(info, pid);
 	}
 	return (0);
 }
 
 void	parent_process(t_infos *info, pid_t pid)
 {
-	free(info->cmd_in.path);
-	free(info->cmd_out.path);
 	int	i;
+
 	i = -1;
-	if (info->err_file.in == 0)
+	if (info->err_cmd.in == 0)
 	{
+		free(info->cmd_in.path);
 		while (info->cmd_in.args[++i])
 			free(info->cmd_in.args[i]);
 		free(info->cmd_in.args);
 	}
 	i = -1;
-	while (info->cmd_out.args[++i])
-		free(info->cmd_out.args[i]);
-	free(info->cmd_out.args);
+	if (info->err_cmd.out == 0)
+	{
+		free(info->cmd_out.path);
+		while (info->cmd_out.args[++i])
+			free(info->cmd_out.args[i]);
+		free(info->cmd_out.args);
+	}
 }

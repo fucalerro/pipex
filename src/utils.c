@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 18:13:12 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 18:27:45 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,66 +44,33 @@ char	**get_paths(char *const **envp)
  * @param cmd_path The final path of the command.
  * @return int
  */
-int	get_cmd_path(char **all_paths, char const ***cmd_args, char **cmd_path)
+int	get_cmd_path(char **paths, char const ***args, char **path, int err_file)
 {
 	int		i;
 	char	*p_slash;
 	int		cmd_exist;
 
 	cmd_exist = FALSE;
-
 	i = 0;
-	while (all_paths[++i])
+	while (paths[++i])
 	{
-		p_slash = ft_strjoin_safe(all_paths[i], "/");
-		*cmd_path = ft_strjoin_safe(p_slash, **cmd_args);
+		p_slash = ft_strjoin_safe(paths[i], "/");
+		*path = ft_strjoin_safe(p_slash, **args);
 		free(p_slash);
-		cmd_exist = access(*cmd_path, F_OK);
+		cmd_exist = access(*path, F_OK);
 		if (cmd_exist == TRUE)
 			break ;
 		else
 		{
 			cmd_exist = FALSE;
-			free(*cmd_path);
-			*cmd_path = 0;
+			free(*path);
+			*path = 0;
 		}
 	}
-	if (cmd_exist != TRUE)
-	{
-		printf("command not found: %s\n", (*cmd_args)[0]);
-	}
+	if (cmd_exist != TRUE && err_file == 0)
+		printf("command not found: %s\n", (*args)[0]);
 	return (cmd_exist);
 }
-
-/**
- * @brief Create a string with the content of the file in filepath.
- *
- * @param filepath The path of the file to read.
- * @return char*
- */
-// char	*get_file_string(char *filepath)
-// {
-// 	int		fd;
-// 	char	*line;
-// 	char	*new_buffer;
-// 	char	*buffer;
-
-// 	fd = open(filepath, O_RDWR);
-// 	buffer = 0;
-// 	while (1)
-// 	{
-// 		line = get_next_line(fd);
-// 		if (line == NULL)
-// 			break ;
-// 		new_buffer = ft_strjoin_safe(buffer, line);
-// 		free(buffer);
-// 		buffer = 0;
-// 		buffer = new_buffer;
-// 		free(line);
-// 	}
-// 	close(fd);
-// 	return (new_buffer);
-// }
 
 void	single_quote_string(char ***args)
 {
@@ -124,7 +91,6 @@ void	single_quote_string(char ***args)
 	}
 }
 
-
 /**
  * @brief Parse the command in args and store the result in cmd struct.
  *
@@ -133,7 +99,7 @@ void	single_quote_string(char ***args)
  * @param envp
  * @return int
  */
-int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
+int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp, int err_file)
 {
 	char	**paths;
 	int		i;
@@ -141,14 +107,13 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp)
 
 	cmd->path = 0;
 	paths = get_paths(&envp);
-
 	cmd->args = ft_split(args, ' ');
-	cmd_exist = get_cmd_path(paths, (char const ***)&cmd->args, &cmd->path);
+	cmd_exist = get_cmd_path(paths, (char const ***)&cmd->args,
+			&cmd->path, err_file);
 	i = -1;
 	single_quote_string(&cmd->args);
 	while (paths[++i])
 		free(paths[i]);
 	free(paths);
-	printf("NEW cmd_exist: %d\n", cmd_exist);
 	return (cmd_exist);
 }

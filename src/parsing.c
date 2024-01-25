@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:46:16 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/23 18:29:59 by lferro           ###   ########.fr       */
+/*   Updated: 2024/01/25 18:25:55 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,37 +22,25 @@
  */
 void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp)
 {
-	info->err_file = open_files(argv, &info->fd.in, &info->fd.out);
-	if (info->err_file.in >= 0)
-	{
-		if (parse_cmd(&info->cmd_in, argv[2], envp) == FALSE)
-		{
-			info->err_cmd.in = CMD_NOT_FOUND;
-			printf("command not found: %s", argv[2]);
-		}
-	}
-	if (info->err_file.out >= 0)
-	{
-		if (parse_cmd(&info->cmd_out, argv[3], envp) == FALSE)
-		{
-			info->err_cmd.out = CMD_NOT_FOUND;
-			printf("command not found: %s", argv[2]);
-		}
-	}
+	open_files(argv, info);
+	if (parse_cmd(&info->cmd_in, argv[2], envp, info->err_file.in) == FALSE)
+		info->err_cmd.in = CMD_NOT_FOUND;
+	if (parse_cmd(&info->cmd_out, argv[3], envp, info->err_file.out) == FALSE)
+		info->err_cmd.out = CMD_NOT_FOUND;
 }
 
-void	access_infile(const char *filename, t_err *err)
+void	access_infile(const char *filename, t_infos *info)
 {
-	err->in = 0;
+	info->err_file.in = 0;
 	if (access(filename, F_OK) == -1)
 	{
 		printf("%s: %s\n", strerror(errno), filename);
-		err->in = F_NOT_EXIST;
+		info->err_file.in = F_NOT_EXIST;
 	}
 	else if (access(filename, R_OK) == -1)
 	{
 		printf("%s: %s\n", strerror(errno), filename);
-		err->in = READ_DENIED;
+		info->err_file.in = READ_DENIED;
 	}
 }
 
@@ -67,33 +55,30 @@ void	access_infile(const char *filename, t_err *err)
  * @param out_fd
  * @return t_err
  */
-t_err	open_files(char const *argv[], int *in_fd, int *out_fd)
+void	open_files(char const *argv[], t_infos *info)
 {
-	t_err	err;
-
-	access_infile(argv[1], &err);
-	*in_fd = open(argv[1], O_RDONLY);
-	*out_fd = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	// access_outfile(argv[4], &err);
-	return (err);
+	init_err(info);
+	access_infile(argv[1], info);
+	access_outfile(argv[4], info);
+	if (info->err_file.in == 0)
+		info->fd.in = open(argv[1], O_RDONLY);
+	if (info->err_file.out == 0)
+		info->fd.out = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 }
 
-int	access_outfile(const char *filename, t_err *err)
+void	access_outfile(const char *filename, t_infos *info)
 {
 	if (access(filename, F_OK) == -1)
 	{
 		if (access(".", W_OK) == -1)
 		{
 			printf("%s: %s\n", strerror(errno), filename);
-			err->out = CREATE_DENIED;
-			return (-1);
+			info->err_file.out = CREATE_DENIED;
 		}
 	}
 	else if (access(filename, W_OK) == -1)
 	{
 		printf("%s: %s\n", strerror(errno), filename);
-		err->out = WRITE_DENIED;
-		return (-1);
+		info->err_file.out = WRITE_DENIED;
 	}
-	return (0);
 }
