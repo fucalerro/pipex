@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/26 18:41:23 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/11 11:19:48 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 // void	ft_perror(const char *s, ...)
 // {
 // 	int		og_stdout;
-// 	va_list	args;	
+// 	va_list	args;
 // 	va_start(args, s);
 // 	og_stdout = dup(1);
 // 	dup2(2, 1);
@@ -46,7 +46,7 @@ char	**get_paths(char *const **envp)
 	int		i;
 
 	i = 0;
-	while (ft_strncmp((*envp)[i], "PATH=", 5 != 0))
+	while (ft_strncmp((*envp)[i], "PATH=", 5) != 0)
 		i++;
 	if ((*envp)[i] == NULL)
 	{
