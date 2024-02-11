@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:45:23 by lferro            #+#    #+#             */
-/*   Updated: 2024/01/26 19:21:47 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/11 14:01:40 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,19 +86,13 @@ void	parent_process(t_infos *info, pid_t pid)
 	int	i;
 
 	i = -1;
-	if (info->err_cmd.in == 0)
-	{
-		free(info->cmd_in.path);
-		while (info->cmd_in.args[++i])
-			free(info->cmd_in.args[i]);
-		free(info->cmd_in.args);
-	}
+	free(info->cmd_in.path);
+	while (info->cmd_in.args[++i])
+		free(info->cmd_in.args[i]);
+	free(info->cmd_in.args);
 	i = -1;
-	if (info->err_cmd.out == 0)
-	{
-		free(info->cmd_out.path);
-		while (info->cmd_out.args[++i])
-			free(info->cmd_out.args[i]);
-		free(info->cmd_out.args);
-	}
+	free(info->cmd_out.path);
+	while (info->cmd_out.args[++i])
+		free(info->cmd_out.args[i]);
+	free(info->cmd_out.args);
 }
