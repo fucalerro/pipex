@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:46:16 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/11 11:16:06 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 13:45:06 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,18 @@ void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp)
 {
 	open_files(argv, info);
 	if (parse_cmd(&info->cmd_in, argv[2], envp, info->err_file.in) == FALSE)
+	{
 		info->err_cmd.in = CMD_NOT_FOUND;
+		print_errors("command not found: ", (char *)argv[2], "");
+	}
 	if (parse_cmd(&info->cmd_out, argv[3], envp, info->err_file.out) == FALSE)
+	{
 		info->err_cmd.out = CMD_NOT_FOUND;
+		print_errors("command not found: ", (char *)argv[3], "");
+	}
+
+	// if (info->err_cmd.in = CMD_NOT_FOUND)
+	// if (info->err_cmd.out = CMD_NOT_FOUND)
 }
 
 void	access_infile(const char *filename, t_infos *info)

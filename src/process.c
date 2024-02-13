@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:45:23 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/11 14:01:40 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 13:39:14 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ int	cmds_process(t_infos *info, char *const *envp)
 			return (1);
 		else if (pid == 0)
 		{
+			// waitpid(pid, NULL, 0);
 			wait(0);
 			out_cmd_process(info, envp);
 		}
@@ -86,6 +87,7 @@ void	parent_process(t_infos *info, pid_t pid)
 	int	i;
 
 	i = -1;
+	// waitpid(pid, NULL, 0);
 	free(info->cmd_in.path);
 	while (info->cmd_in.args[++i])
 		free(info->cmd_in.args[i]);
