@@ -6,14 +6,14 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:46:16 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/13 13:45:06 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 18:37:13 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
 /**
- * @brief Parse the command and store it in a struct.
+ * @brief Parse the commands and store it in a struct.
  *
  * @param info
  * @param argv
@@ -33,9 +33,6 @@ void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp)
 		info->err_cmd.out = CMD_NOT_FOUND;
 		print_errors("command not found: ", (char *)argv[3], "");
 	}
-
-	// if (info->err_cmd.in = CMD_NOT_FOUND)
-	// if (info->err_cmd.out = CMD_NOT_FOUND)
 }
 
 void	access_infile(const char *filename, t_infos *info)
@@ -75,8 +72,33 @@ void	open_files(char const *argv[], t_infos *info)
 		info->fd.out = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 }
 
+int	if_dir(const char *filename, t_infos *infos)
+{
+	char	*dirname;
+	int		err;
+
+	err = 0;
+	if (ft_strchr(filename, '/') != NULL)
+	{
+		dirname = extract_before_slash((char *)filename);
+		if (open(dirname, O_DIRECTORY) < 0)
+		{
+			print_errors(strerror(errno), ": ", (char *)filename);
+			err = FILE_IS_DIR;
+		}
+		free(dirname);
+	}
+	return (err);
+}
+
 void	access_outfile(const char *filename, t_infos *info)
 {
+	info->err_file.out = if_dir(filename, info);
+	if (open(filename, O_DIRECTORY) >= 0)
+	{
+		print_errors("", "Is a directory: ", (char *)filename);
+		info->err_file.out = FILE_IS_DIR;
+	}
 	if (access(filename, F_OK) == -1)
 	{
 		if (access(".", W_OK) == -1)

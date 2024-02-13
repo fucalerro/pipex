@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/14 11:11:02 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/11 14:02:03 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 18:21:09 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@
 # define WRITE_DENIED	-3
 # define CREATE_DENIED	-4
 # define CMD_NOT_FOUND	-1
+# define FILE_IS_DIR	-5
 
 // # define PL		printf("\nline %d, file %s\n\n", __LINE__, __FILE__);
 
@@ -102,6 +103,6 @@ void	cmds_parsing(t_infos *info, char const *argv[], char *const *envp);
 void	close_fds(t_infos *info);
 void	init_err(t_infos *info);
 void	print_errors(char *before_msg, char *errmsg, char *after_msg);
-// void	ft_perror(const char *s, ...);
+char	*extract_before_slash(char *str);
 
 #endif

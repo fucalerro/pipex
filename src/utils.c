@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 11:51:52 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/13 13:42:26 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 18:29:36 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,6 @@ int	get_cmd_path(char **paths, char const ***args, char **path, int err_file)
 			*path = 0;
 		}
 	}
-	// if (cmd_exist != TRUE && err_file == 0)
-	// 	print_errors("Command not found: ", (char *)(*args)[0], "");
 	return (cmd_exist);
 }
 
@@ -129,12 +127,11 @@ int	parse_cmd(t_cmd *cmd, const char *args, char *const *envp, int err_file)
 	cmd->path = 0;
 	paths = get_paths(&envp);
 	cmd->args = ft_split(args, ' ');
-
 	if (args[0] == ' ' || args[ft_strlen(args) - 1] == ' ')
 		cmd_exist = FALSE;
 	else
-		cmd_exist = get_cmd_path(paths, (char const ***)&cmd->args,
-				&cmd->path, err_file);
+		cmd_exist = get_cmd_path(paths, (char const ***)&cmd->args, &cmd->path,
+				err_file);
 	i = -1;
 	single_quote_string(&cmd->args);
 	while (paths[++i])

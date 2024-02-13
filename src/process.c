@@ -6,7 +6,7 @@
 /*   By: lferro <lferro@student.42lausanne.ch>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/23 13:45:23 by lferro            #+#    #+#             */
-/*   Updated: 2024/02/13 13:39:14 by lferro           ###   ########.fr       */
+/*   Updated: 2024/02/13 19:09:18 by lferro           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,17 +65,14 @@ int	cmds_process(t_infos *info, char *const *envp)
 		in_cmd_process(info, envp);
 	else
 	{
+		waitpid(pid, NULL, 0);
 		pid = fork();
 		if (pid < 0)
 			perror("fork2 error");
 		if (pid < 0)
 			return (1);
 		else if (pid == 0)
-		{
-			// waitpid(pid, NULL, 0);
-			wait(0);
 			out_cmd_process(info, envp);
-		}
 		else
 			parent_process(info, pid);
 	}
@@ -87,7 +84,6 @@ void	parent_process(t_infos *info, pid_t pid)
 	int	i;
 
 	i = -1;
-	// waitpid(pid, NULL, 0);
 	free(info->cmd_in.path);
 	while (info->cmd_in.args[++i])
 		free(info->cmd_in.args[i]);
@@ -97,4 +93,16 @@ void	parent_process(t_infos *info, pid_t pid)
 	while (info->cmd_out.args[++i])
 		free(info->cmd_out.args[i]);
 	free(info->cmd_out.args);
+}
+
+char	*extract_before_slash(char *str)
+{
+	char	*res;
+	int		i;
+
+	i = 0;
+	while (str[i] != '/')
+		i++;
+	res = ft_substr(str, 0, i);
+	return (res);
 }
